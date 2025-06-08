@@ -62,6 +62,26 @@ class Cell:
         if self.has_bottom_wall:
             bottom_wall = Line(Point(x1, y2), Point(x2, y2))
             self.__win.draw_line(bottom_wall, "black")
+    
+    def draw_move(self, to_cell, undo=False):
+        """Draw a line from the center of this cell to the center of another cell."""
+        # Calculate center points of both cells
+        from_center_x = (self.__x1 + self.__x2) // 2
+        from_center_y = (self.__y1 + self.__y2) // 2
+        to_center_x = (to_cell.__x1 + to_cell.__x2) // 2
+        to_center_y = (to_cell.__y1 + to_cell.__y2) // 2
+        
+        # Create line from center to center
+        move_line = Line(
+            Point(from_center_x, from_center_y),
+            Point(to_center_x, to_center_y)
+        )
+        
+        # Choose color based on undo flag
+        color = "gray" if undo else "red"
+        
+        # Draw the line
+        self.__win.draw_line(move_line, color)
 
 
 class Window:
@@ -112,68 +132,79 @@ def main():
     """Main entrypoint function."""
     win = Window(800, 600)
     
-    # Create and draw different cells with various wall configurations
+    # Create cells for testing move drawing
     
-    # Cell 1: All walls (default)
+    # Create a grid of cells for testing
     cell1 = Cell(win)
     cell1.draw(50, 50, 150, 150)
     
-    # Cell 2: No left wall
     cell2 = Cell(win)
-    cell2.has_left_wall = False
-    cell2.draw(200, 50, 300, 150)
+    cell2.has_right_wall = False  # Open to the right
+    cell2.draw(150, 50, 250, 150)
     
-    # Cell 3: No right wall
     cell3 = Cell(win)
-    cell3.has_right_wall = False
-    cell3.draw(350, 50, 450, 150)
+    cell3.has_left_wall = False   # Open to the left
+    cell3.has_bottom_wall = False # Open to the bottom
+    cell3.draw(250, 50, 350, 150)
     
-    # Cell 4: No top wall
     cell4 = Cell(win)
-    cell4.has_top_wall = False
-    cell4.draw(500, 50, 600, 150)
+    cell4.has_bottom_wall = False # Open to the bottom
+    cell4.draw(50, 150, 150, 250)
     
-    # Cell 5: No bottom wall
     cell5 = Cell(win)
-    cell5.has_bottom_wall = False
-    cell5.draw(650, 50, 750, 150)
+    cell5.has_top_wall = False    # Open to the top
+    cell5.has_right_wall = False  # Open to the right
+    cell5.draw(150, 150, 250, 250)
     
-    # Cell 6: Only left and right walls (corridor)
     cell6 = Cell(win)
-    cell6.has_top_wall = False
-    cell6.has_bottom_wall = False
-    cell6.draw(50, 200, 150, 300)
+    cell6.has_top_wall = False    # Open to the top
+    cell6.has_left_wall = False   # Open to the left
+    cell6.draw(250, 150, 350, 250)
     
-    # Cell 7: Only top and bottom walls (horizontal corridor)
     cell7 = Cell(win)
-    cell7.has_left_wall = False
-    cell7.has_right_wall = False
-    cell7.draw(200, 200, 300, 300)
+    cell7.has_top_wall = False    # Open to the top
+    cell7.draw(50, 250, 150, 350)
     
-    # Cell 8: No walls (completely open)
     cell8 = Cell(win)
-    cell8.has_left_wall = False
-    cell8.has_right_wall = False
-    cell8.has_top_wall = False
-    cell8.has_bottom_wall = False
-    cell8.draw(350, 200, 450, 300)
+    cell8.has_right_wall = False  # Open to the right
+    cell8.draw(150, 250, 250, 350)
     
-    # Cell 9: Only left wall
     cell9 = Cell(win)
-    cell9.has_right_wall = False
-    cell9.has_top_wall = False
-    cell9.has_bottom_wall = False
-    cell9.draw(500, 200, 600, 300)
+    cell9.has_left_wall = False   # Open to the left
+    cell9.draw(250, 250, 350, 350)
     
-    # Cell 10: Different size cell with all walls
-    cell10 = Cell(win)
-    cell10.draw(100, 350, 250, 500)
+    # Test different types of moves
     
-    # Cell 11: Large cell with only diagonal walls (top-left and bottom-right)
-    cell11 = Cell(win)
-    cell11.has_right_wall = False
-    cell11.has_bottom_wall = False
-    cell11.draw(300, 350, 500, 500)
+    # Red moves (normal path)
+    cell1.draw_move(cell2)        # Horizontal move right
+    cell2.draw_move(cell3)        # Horizontal move right
+    cell3.draw_move(cell6)        # Vertical move down
+    cell6.draw_move(cell9)        # Vertical move down
+    
+    # Gray moves (undo/backtrack)
+    cell9.draw_move(cell8, undo=True)     # Horizontal move left (backtrack)
+    cell8.draw_move(cell5, undo=True)     # Vertical move up (backtrack)
+    
+    # More red moves (continuing path)
+    cell5.draw_move(cell4)        # Horizontal move left
+    cell4.draw_move(cell7)        # Vertical move down
+    
+    # Test diagonal move
+    cell7.draw_move(cell9)        # Diagonal move
+    
+    # Add some standalone cells to show different wall configurations
+    standalone1 = Cell(win)
+    standalone1.has_left_wall = False
+    standalone1.has_top_wall = False
+    standalone1.draw(450, 100, 550, 200)
+    
+    standalone2 = Cell(win)
+    standalone2.has_right_wall = False
+    standalone2.has_bottom_wall = False
+    standalone2.draw(600, 300, 700, 400)
+    
+    # Test move between standalone cells
+    standalone1.draw_move(standalone2)
     
     win.wait_for_close()
 
